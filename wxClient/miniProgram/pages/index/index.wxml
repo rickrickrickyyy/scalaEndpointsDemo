@@ -1,0 +1,7 @@
+<view wx:for="{{objectArray}}" wx:key="title" style="display: block;"> 
+  <view style="height=100rpx">{{item.title}}</view>
+  <view style="height=100rpx">{{item.title}}</view>
+  <view style="height=100rpx">{{item.title}}</view>
+  <view style="height=100rpx">{{item.title}}</view>
+  <view style="height=100rpx">{{item.title}}</view>
+</view>

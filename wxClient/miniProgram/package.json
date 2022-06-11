@@ -1,0 +1,7 @@
+{
+  "name": "miniProgram",
+  "version": "1.0.0",
+  "dependencies": {
+    "miniprogram-recycle-view": "^0.1.5"
+  }
+}
