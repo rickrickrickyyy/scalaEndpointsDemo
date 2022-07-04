@@ -5,8 +5,8 @@ import endpoints4s.algebra
 trait RestfulEndpoints extends algebra.EndpointsWithCustomErrors with BearerAuthentication with CustomErrors with algebra.JsonEntitiesFromSchemas {
   protected val API_SEGMENT = "api"
 
-  type SINGLE_RESPONSE[T]
-  type MULTIPLE_RESPONSE[T]
+  type SINGLE_RESPONSE[_]
+  type MULTIPLE_RESPONSE[_]
 
   implicit def multipleResponseSchema[T](implicit tSchemas: JsonSchema[T]): JsonSchema[MULTIPLE_RESPONSE[T]]
   implicit def singleResponseSchema[T](implicit tSchemas: JsonSchema[T]): JsonSchema[SINGLE_RESPONSE[T]]

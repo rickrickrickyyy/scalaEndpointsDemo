@@ -13,7 +13,6 @@ import endpoints4s.algebra.EndpointsWithCustomErrors
   * @group interpreters
   */
 trait CustomErrors extends endpoints4s.algebra.Errors with ErrorSchema { this: EndpointsWithCustomErrors =>
-  private val ERROR_DELIMITER = ". "
   type ClientErrors = Error[StatusCode]
   type ServerError = Error[StatusCode]
 
@@ -24,10 +23,10 @@ trait CustomErrors extends endpoints4s.algebra.Errors with ErrorSchema { this: E
     Invalid(clientErrors.errors)
 
   final def throwableToServerError(throwable: Throwable): ServerError =
-    Error(InternalServerError, throwable.getMessage.split(ERROR_DELIMITER))
+    Error(InternalServerError, Seq(throwable.getMessage))
 
   final def serverErrorToThrowable(serverError: ServerError): Throwable =
-    new Throwable(serverError.errors.mkString(ERROR_DELIMITER))
+    new Throwable(serverError.errors.headOption.getOrElse("Unknown"))
 
   /** Response entity format for [[Invalid]] values
     */

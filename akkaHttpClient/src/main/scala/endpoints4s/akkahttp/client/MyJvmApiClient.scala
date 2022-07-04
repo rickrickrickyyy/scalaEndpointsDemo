@@ -6,10 +6,11 @@ import akka.http.scaladsl.model.headers.Authorization
 import akka.http.scaladsl.model.{Uri, headers}
 import akka.stream.Materializer
 import buildinfo.BuildInfo
-import endpoints4s.extraAlgebra.{ApiSchemas, CustomErrors, MyEntity, RestfulClient}
+import endpoints4s.extraAlgebra.{ApiSchemas, CustomErrors, MovingRemark, MyEntity, RestfulClient}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
+import scala.util.{Failure, Success}
 
 class MyJvmApiClient(override val settings: EndpointsSettings)(implicit
     val system: ActorSystem,
@@ -48,25 +49,16 @@ object MyJvmApiClient {
         .cachedHostConnectionPool(address, port)
     })
     val settings: EndpointsSettings = EndpointsSettings(executor, toStrictTimeout = 30.seconds)
-    lazy val client = new MyJvmApiClient(settings)(system, EC, M)
-    val f: PartialFunction[Either[client.MULTIPLE_RESPONSE[MyEntity], client.ERROR_RESPONSE], Unit] = {
-      case Left(value)  => System.out.println("right: " + value.data)
-      case Right(value) => System.out.println("left: " + value.toString)
+    lazy val client = new RemarksClient(settings)(system, EC, M)
+
+    client.remarkEvents()("auth").onComplete {
+      case Failure(exception) => System.out.println(exception.toString)
+      case Success(value) =>
+        value match {
+          case Left(value)  => value.runForeach(e => System.out.println(e))
+          case Right(value) => System.out.println(value.toString)
+        }
     }
-
-    val result = (for {
-      a <- client.getItemsImpl()(((1, 2), None, None, None, "cr"))
-      b <- client.getItemsImpl()(((1, 2), None, None, None, "cr"))
-      c <- client.getItemsImpl()(((1, 2), None, None, None, "cr"))
-    } yield {
-      f(a)
-      f(b)
-      f(c)
-
-      (a, b, c)
-    }).recover({ case e: Throwable =>
-      e.printStackTrace()
-      System.out.println(e.getMessage)
-    })
+    client.postItemNoIdImpl()(MovingRemark("remark", System.currentTimeMillis()), "Empty")
   }
 }

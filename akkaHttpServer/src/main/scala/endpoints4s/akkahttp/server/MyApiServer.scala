@@ -1,7 +1,7 @@
 package endpoints4s.akkahttp.server
 
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRefResolver, ActorSystem}
+import akka.actor.typed.{ActorRef, ActorRefResolver, ActorSystem, DispatcherSelector}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
@@ -58,7 +58,7 @@ class MyApiServer
     updateItemsImpl().implementedByAsync((e: (Seq[MyEntity], String)) => throw new IllegalArgumentException(""))
   }
   def getItems(): Route = {
-    getItemsImpl().implementedByAsync((e) => Future.successful(Left(JsonItemsMsg(Seq(MyEntity("hhh", e._1._1, e._4)), isLastPage = false))))
+    getItemsImpl().implementedByAsync((e) => Future.successful(Left(JsonItemsMsg(Seq(MyEntity("hhh", e._1._1, e._2)), isLastPage = false))))
   }
 
 }
@@ -73,8 +73,12 @@ object MyApiServer {
     val restfulHttpSystem = ActorSystem[Nothing](
       Behaviors.setup[Nothing](context => {
         implicit val actorSystem: ActorSystem[Nothing] = context.system
-        implicit val EC: ExecutionContext = ExecutionContext.Implicits.global
+        implicit val EC: ExecutionContext = context.system.dispatchers.lookup(DispatcherSelector.fromConfig("my-dispatcher"))
+
         implicit val M: Materializer = Materializer(actorSystem)
+
+        val remarkService = new RemarksServer()
+
         val server = new MyApiServer()
         Http()
           .newServerAt(interface = "0.0.0.0", port = 80)
@@ -88,7 +92,8 @@ object MyApiServer {
               ~ server.clearItem
               ~ server.replaceItems
               ~ server.updateItems
-              ~ server.getItems
+              ~ remarkService.eventsImpl()
+              ~ remarkService.postItemImpl()
               ~ mainResources(isDebug)
               ~ Documentations.routes()
           )

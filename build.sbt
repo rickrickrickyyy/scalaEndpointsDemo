@@ -44,7 +44,7 @@ lazy val akkaHttpServer = (project in file(serverProjectName))
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "com.typesafe.akka" %% "akka-actor-typed" % akkaActorVersion,
-      "com.typesafe.akka" %% "akka-stream" % akkaActorVersion,
+      "com.typesafe.akka" %% "akka-stream-typed" % akkaActorVersion,
       "org.endpoints4s" %% "akka-http-server" % "6.1.0",
       "org.endpoints4s" %% "openapi" % openApiVersion
     )
@@ -91,7 +91,8 @@ lazy val fetchClient = project
     scalaVersion := jsScalaVersion,
     libraryDependencies ++= Seq(
       "org.endpoints4s" %%% "fetch-client" % "2.0.0",
-      "org.scala-js" %%% "scalajs-dom" % "2.1.0"
+      "org.scala-js" %%% "scalajs-dom" % "2.1.0",
+      "com.lihaoyi" %%% "scalatags" % "0.11.1"
     )
   )
   .dependsOn(sharedJS)
