@@ -1,3 +1,5 @@
+###玩具项目，请不要在生产上用这些代码
+
 demo一下用scala做一个项目
 
 用intellij安装scala插件
