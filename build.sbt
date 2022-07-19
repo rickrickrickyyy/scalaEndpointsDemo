@@ -96,6 +96,7 @@ lazy val fetchClient = project
     )
   )
   .dependsOn(sharedJS)
+  .dependsOn(caseClassForm)
 
 lazy val wxFacade = project
   .enablePlugins(ScalaJSPlugin)
@@ -136,3 +137,17 @@ lazy val wxClient = project
   .dependsOn(endpoints4sWx)
   .dependsOn(sharedJS)
   .dependsOn(wxFacade)
+
+lazy val caseClassForm = project
+  .enablePlugins(ScalaJSPlugin)
+  .settings(
+    name := "caseClassForm",
+    version := "0.1",
+    scalaVersion := jsScalaVersion,
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "2.1.0",
+      "com.chuusai" %%% "shapeless" % "2.3.9",
+      "com.lihaoyi" %%% "scalatags" % "0.11.1",
+      "com.lihaoyi" %%% "scalarx" % "0.4.3"
+    )
+  )

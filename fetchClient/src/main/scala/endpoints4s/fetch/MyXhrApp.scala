@@ -1,24 +1,28 @@
 package endpoints4s.fetch
 
 import buildinfo.BuildInfo
+import com.rick.form.DomSyntax._
+import com.rick.form.RenderDom._
 import endpoints4s.extraAlgebra.{Command, MovingRemark}
 import org.scalajs.dom
 import scalatags.JsDom.all._
 
 import scala.concurrent.ExecutionContext
 import scala.scalajs.js
-import scala.scalajs.js.|
+import scala.scalajs.js.{Promise, UndefOr, |}
 import scala.util.{Failure, Success}
-
+import rx._
 object MyXhrApp {
-  def main(args: Array[String]): Unit = {
+  val mainApp: Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
     val settings = EndpointsSettings().withBaseUri(Some(BuildInfo.BASE_URL))
 
     val sClient = new RemarkClient(settings)
     val ticks = sClient.remarkEvents()("auth").future
+    val remarkVar = Var(MovingRemark("", 0L))
     dom.document.body.appendChild(
       div(
+        remarkVar.renderForm(),
         button(
           "点击发送虚拟弹幕(成功)",
           onclick := { () =>
@@ -93,6 +97,20 @@ object MyXhrApp {
               }
             }
           }
+        ),
+        button(
+          "点击发送编辑框里面的内容",
+          onclick := { () =>
+            dom.document.body.appendChild(div("触发点击事件").render)
+            for {
+              b <- sClient.postItemNoIdImpl()(remarkVar.now, "token").future
+            } {
+              b match {
+                case Left(value)  =>
+                case Right(value) =>
+              }
+            }
+          }
         )
       ).render
     )
@@ -101,13 +119,14 @@ object MyXhrApp {
         case Failure(exception) => System.out.println("failed: " + exception.getMessage)
         case Success(value) =>
           value match {
-            case Left(value)  => read(value.getReader(), firstChunk = true): js.UndefOr[js.Promise[Unit]]
+            case Left(value)  => read(value.getReader(), firstChunk = true): UndefOr[Promise[Unit]]
             case Right(value) => System.out.println("failed: " + value.toString)
           }
 
       }
     )
   }
+  def main(args: Array[String]): Unit = {}
 
   def read[T](
       reader: dom.ReadableStreamReader[T],
